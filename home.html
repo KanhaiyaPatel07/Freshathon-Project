@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RescueConnect - AI-Powered Disaster Response</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+</head>
+<body>
+    <script>
+    // Authentication check - ADD THIS AT TOP
+    if (!localStorage.getItem('isAuthenticated')) {
+        window.location.href = 'login.html';
+    }
+</script>
+    <div class="notification-banner emergency-alert">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>EMERGENCY ALERT: Earthquake (6.2 magnitude) reported in Northern Region - Evacuations underway</span>
+    </div>
+
+    <header class="main-header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-hands-helping"></i>
+                <h1>RescueConnect</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#resources">Resources</a></li>
+                    <li><a href="#map">Live Map</a></li>
+                    <li><a href="#request-help">Request Help</a></li>
+                    <li><a href="#volunteer">Volunteer</a></li>
+                    <li><a href="#about">About</a></li>
+                </ul>
+            </div>
+            <div class="auth-buttons">
+                <button id="login-btn" class="btn outline">Login</button>
+                <button id="register-btn" class="btn primary">Register</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <div class="hero-content">
+                <h2>AI-Powered Disaster Response Platform</h2>
+                <p>Connecting those in need with emergency resources and volunteers in real-time</p>
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <div class="stat-number" id="people-helped">5,247</div>
+                        <div class="stat-label">People Helped</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="active-volunteers">1,892</div>
+                        <div class="stat-label">Active Volunteers</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="emergency-requests">324</div>
+                        <div class="stat-label">Active Requests</div>
+                    </div>
+                </div>
+                <div class="cta-buttons">
+                    <button class="btn primary" id="need-help-btn">I Need Help</button>
+                    <button class="btn secondary" id="offer-help-btn">I Can Help</button>
+                </div>
+                <div class="sms-alternative">
+                    <p>No internet? Text <strong>HELP</strong> to <strong>RESCUE (737283)</strong> for assistance</p>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="https://c8.alamy.com/comp/2KF7DHF/seoul-south-korea-16th-nov-2022-a-rescue-team-conducting-patient-classification-and-transfer-training-at-the-disaster-response-emergency-rescue-training-held-at-a-park-in-seoul-the-2022-safe-korea-training-is-a-session-to-check-the-disaster-response-system-nationwide-from-november-14-to-25-for-a-total-of-1433-training-sessions-at-300-central-ministries-local-governments-and-public-institutions-credit-image-kim-jae-hwansopa-images-via-zuma-press-wire-2KF7DHF.jpg" alt="Emergency response team helping community">
+                <div class="ai-assistant-badge">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Assistant Available 24/7</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="resources" class="resource-section">
+            <h2>Emergency Resources</h2>
+            <div class="section-subtitle">Critical services available in your area</div>
+            <div class="resource-cards">
+                <div class="resource-card">
+                    <div class="card-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <h3>Shelters</h3>
+                    <p>Find safe locations near you with capacity information</p>
+                    <button class="btn small">View Shelters</button>
+                    <div class="card-badge">12 available</div>
+                </div>
+                <div class="resource-card">
+                    <div class="card-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <h3>Food & Water</h3>
+                    <p>Locations providing meals and clean water</p>
+                    <button class="btn small">Find Food</button>
+                    <div class="card-badge">8 locations</div>
+                </div>
+                <div class="resource-card">
+                    <div class="card-icon">
+                        <i class="fas fa-briefcase-medical"></i>
+                    </div>
+                    <h3>Medical Aid</h3>
+                    <p>Emergency medical services and pharmacies</p>
+                    <button class="btn small">Get Medical Help</button>
+                    <div class="card-badge">5 stations</div>
+                </div>
+                <div class="resource-card">
+                    <div class="card-icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <h3>Disaster Info</h3>
+                    <p>Latest updates and official alerts</p>
+                    <button class="btn small">View Updates</button>
+                    <div class="card-badge">3 new</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="map" class="map-section">
+            <div class="section-header">
+                <h2>Live Resource Map</h2>
+                <div class="map-controls">
+                    <button class="btn small outline" id="refresh-map">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <div class="map-legend-toggle">
+                        <i class="fas fa-layer-group"></i> Legend
+                    </div>
+                </div>
+            </div>
+            <div class="map-container">
+                <div id="map-display"></div>
+                <div class="map-legend">
+                    <h4>Map Legend</h4>
+                    <ul>
+                        <li><span class="legend-icon shelter"></span> Shelter</li>
+                        <li><span class="legend-icon food"></span> Food/Water</li>
+                        <li><span class="legend-icon medical"></span> Medical</li>
+                        <li><span class="legend-icon danger"></span> Danger Zone</li>
+                        <li><span class="legend-icon volunteer"></span> Volunteers</li>
+                        <li><span class="legend-icon evacuation"></span> Evacuation Route</li>
+                    </ul>
+                    <div class="location-search">
+                        <input type="text" id="map-search" placeholder="Search location...">
+                        <button class="btn small"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div class="map-actions">
+                        <button class="btn small outline" id="report-danger">
+                            <i class="fas fa-exclamation-triangle"></i> Report Danger
+                        </button>
+                        <button class="btn small" id="find-nearest-help">
+                            <i class="fas fa-crosshairs"></i> Find Nearest Help
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="request-help" class="help-request-section">
+            <h2>Request Emergency Assistance</h2>
+            <div class="section-subtitle">Our AI will prioritize your request based on urgency</div>
+            
+            <div class="request-form-container">
+                <form id="help-request-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="emergency-type">Type of Emergency *</label>
+                            <select id="emergency-type" required>
+                                <option value="">Select emergency type</option>
+                                <option value="medical">Medical Emergency</option>
+                                <option value="rescue">Rescue Needed</option>
+                                <option value="shelter">Need Shelter</option>
+                                <option value="food">Need Food/Water</option>
+                                <option value="trapped">Trapped/Stranded</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="urgency-level">Urgency Level *</label>
+                            <select id="urgency-level" required>
+                                <option value="">Select urgency</option>
+                                <option value="critical">Critical (Life-threatening)</option>
+                                <option value="high">High (Urgent help needed)</option>
+                                <option value="medium">Medium (Need help today)</option>
+                                <option value="low">Low (Need help soon)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="location">Your Location *</label>
+                        <div class="location-input-group">
+                            <input type="text" id="location" placeholder="e.g. Near Central Park, Building 5" required>
+                            <button type="button" class="btn small outline" id="detect-location">
+                                <i class="fas fa-location-arrow"></i> Detect
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="people-count">Number of People *</label>
+                        <input type="number" id="people-count" min="1" value="1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="details">Additional Details</label>
+                        <textarea id="details" placeholder="Describe your situation, special needs, accessibility requirements..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contact">Contact Information *</label>
+                        <input type="text" id="contact" placeholder="Phone number or alternative contact" required>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn primary">
+                            <i class="fas fa-paper-plane"></i> Send Request
+                        </button>
+                        <button type="button" class="btn outline" id="voice-assist-btn">
+                            <i class="fas fa-microphone"></i> Voice Assist
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="request-info">
+                    <h3>How Our AI Prioritizes Requests</h3>
+                    <ol>
+                        <li><strong>Critical needs</strong> are identified using natural language processing</li>
+                        <li><strong>Location analysis</strong> determines proximity to resources</li>
+                        <li><strong>Resource matching</strong> connects you with the closest available help</li>
+                        <li><strong>Real-time updates</strong> keep you informed about response status</li>
+                    </ol>
+                    
+                    <div class="ai-features">
+                        <h4>AI-Powered Features:</h4>
+                        <div class="ai-feature">
+                            <i class="fas fa-bolt"></i>
+                            <span>Automated triage system</span>
+                        </div>
+                        <div class="ai-feature">
+                            <i class="fas fa-map-marked-alt"></i>
+                            <span>Optimal routing for responders</span>
+                        </div>
+                        <div class="ai-feature">
+                            <i class="fas fa-language"></i>
+                            <span>Multilingual support</span>
+                        </div>
+                    </div>
+                    
+                    <div class="emergency-hotline">
+                        <i class="fas fa-phone-alt"></i>
+                        <div>
+                            <p>For immediate life-threatening emergencies:</p>
+                            <h4>Call Local Emergency Services</h4>
+                            <div class="emergency-numbers">
+                                <span>US: 911</span>
+                                <span>EU: 112</span>
+                                <span>India: 112</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="chatbot-section">
+            <div class="chatbot-container">
+                <div class="chatbot-header">
+                    <div class="chatbot-title">
+                        <h3>RescueAI Assistant</h3>
+                        <div class="chatbot-subtitle">Powered by GPT-4 & Disaster Response Models</div>
+                    </div>
+                    <div class="chatbot-status">
+                        <span class="status-indicator active"></span>
+                        <span>Online</span>
+                        <div class="typing-indicator" id="typing-indicator">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+                <div id="chatbot-messages" class="chatbot-messages">
+                    <div class="message bot">
+                        <div class="message-content">
+                            <p>Hello! I'm RescueAI, your emergency assistance assistant. I can help you:</p>
+                            <ul class="chatbot-features">
+                                <li>Find emergency resources</li>
+                                <li>Report dangerous situations</li>
+                                <li>Connect with responders</li>
+                                <li>Translate emergency information</li>
+                            </ul>
+                            <p>How can I help you today?</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chatbot-input">
+                    <button class="btn icon" id="voice-input-btn">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <input type="text" id="chatbot-input-field" placeholder="Type your emergency or question...">
+                    <button class="btn primary" id="send-message-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="quick-replies">
+                    <button class="quick-reply-btn">Find nearest shelter</button>
+                    <button class="quick-reply-btn">Report danger zone</button>
+                    <button class="quick-reply-btn">Medical emergency</button>
+                    <button class="quick-reply-btn">Translate help</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="volunteer" class="volunteer-section">
+            <h2>Become a Verified Volunteer</h2>
+            <div class="section-subtitle">Join our network of trusted responders</div>
+            
+            <div class="volunteer-container">
+                <div class="volunteer-benefits">
+                    <h3>Why Volunteer?</h3>
+                    <div class="benefits-grid">
+                        <div class="benefit-item">
+                            <i class="fas fa-heart"></i>
+                            <h4>Save Lives</h4>
+                            <p>Directly impact your community during crises</p>
+                        </div>
+                        <div class="benefit-item">
+                            <i class="fas fa-bullhorn"></i>
+                            <h4>Early Alerts</h4>
+                            <p>Receive real-time emergency notifications</p>
+                        </div>
+                        <div class="benefit-item">
+                            <i class="fas fa-map-marked-alt"></i>
+                            <h4>Resource Access</h4>
+                            <p>Get access to our live emergency map</p>
+                        </div>
+                        <div class="benefit-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <h4>Verified Network</h4>
+                            <p>Connect with other trained responders</p>
+                        </div>
+                    </div>
+                    
+                    <div class="testimonial">
+                        <div class="testimonial-content">
+                            "As a volunteer with RescueConnect, I've been able to help dozens of families during floods. The AI tools help us respond faster and more effectively."
+                        </div>
+                        <div class="testimonial-author">
+                            <img src="assets/images/testimonial.jpg" alt="Volunteer">
+                            <div>
+                                <h5>Maria Gonzalez</h5>
+                                <p>Volunteer since 2022</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="volunteer-form">
+                    <form id="volunteer-registration">
+                        <h3>Volunteer Registration</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="vol-name">Full Name *</label>
+                                <input type="text" id="vol-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="vol-email">Email *</label>
+                                <input type="email" id="vol-email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="vol-phone">Phone *</label>
+                                <input type="tel" id="vol-phone" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="vol-location">Location *</label>
+                                <input type="text" id="vol-location" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="vol-skills">Skills/Qualifications *</label>
+                            <select id="vol-skills" multiple>
+                                <option value="medical">Medical Training</option>
+                                <option value="rescue">Search & Rescue</option>
+                                <option value="counseling">Crisis Counseling</option>
+                                <option value="language">Multilingual</option>
+                                <option value="logistics">Logistics</option>
+                                <option value="tech">Tech Support</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="vol-availability">Availability *</label>
+                            <div class="availability-options">
+                                <label><input type="checkbox" name="availability" value="immediate"> Immediate Response</label>
+                                <label><input type="checkbox" name="availability" value="short"> Short Notice (24hr)</label>
+                                <label><input type="checkbox" name="availability" value="scheduled"> Scheduled Shifts</label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="vol-experience">Previous Experience</label>
+                            <textarea id="vol-experience" placeholder="Describe any relevant experience"></textarea>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn primary">
+                                <i class="fas fa-user-plus"></i> Register as Volunteer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-section">
+                <div class="logo">
+                    <i class="fas fa-hands-helping"></i>
+                    <h4>RescueConnect</h4>
+                </div>
+                <p>AI-powered disaster response platform connecting those in need with verified help resources.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#resources">Emergency Resources</a></li>
+                    <li><a href="#map">Live Map</a></li>
+                    <li><a href="#request-help">Request Help</a></li>
+                    <li><a href="#volunteer">Volunteer</a></li>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#privacy">Privacy Policy</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <ul>
+                    <li><i class="fas fa-phone-alt"></i> Emergency: Local emergency number</li>
+                    <li><i class="fas fa-sms"></i> SMS: HELP to RESCUE (737283)</li>
+                    <li><i class="fas fa-envelope"></i> support@rescueconnect.org</li>
+                    <li><i class="fas fa-map-marker-alt"></i> Global Response Network</li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Partners</h4>
+                <div class="partner-logos">
+                    <img src="assets/images/partner-fema.png" alt="FEMA">
+                    <img src="assets/images/partner-redcross.png" alt="Red Cross">
+                    <img src="assets/images/partner-un.png" alt="United Nations">
+                    <img src="assets/images/partner-who.png" alt="WHO">
+                </div>
+                <div class="newsletter">
+                    <h5>Stay Informed</h5>
+                    <form id="newsletter-form">
+                        <input type="email" placeholder="Your email">
+                        <button type="submit" class="btn small">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2023 RescueConnect. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#terms">Terms of Service</a>
+                <a href="#privacy">Privacy Policy</a>
+                <a href="#cookies">Cookies</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modals -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-icon">
+                <i class="fas fa-sign-in-alt"></i>
+            </div>
+            <h3>Login to RescueConnect</h3>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <div class="form-options">
+                    <label>
+                        <input type="checkbox"> Remember me
+                    </label>
+                    <a href="#forgot-password" class="forgot-password">Forgot password?</a>
+                </div>
+                <button type="submit" class="btn primary">Login</button>
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                <button type="button" class="btn outline social-login">
+                    <i class="fab fa-google"></i> Continue with Google
+                </button>
+                <button type="button" class="btn outline social-login">
+                    <i class="fab fa-facebook"></i> Continue with Facebook
+                </button>
+                <div class="auth-switch">
+                    Don't have an account? <a href="#register" id="switch-to-register">Register</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="register-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h3>Create an Account</h3>
+            <form id="register-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="reg-fname">First Name</label>
+                        <input type="text" id="reg-fname" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-lname">Last Name</label>
+                        <input type="text" id="reg-lname" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reg-email">Email</label>
+                    <input type="email" id="reg-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Password</label>
+                    <input type="password" id="reg-password" required>
+                    <div class="password-strength">
+                        <span class="strength-bar"></span>
+                        <span class="strength-bar"></span>
+                        <span class="strength-bar"></span>
+                        <span class="strength-text">Password strength</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reg-confirm-password">Confirm Password</label>
+                    <input type="password" id="reg-confirm-password" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-phone">Phone Number</label>
+                    <input type="tel" id="reg-phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-location">Location</label>
+                    <input type="text" id="reg-location" required>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" required> I agree to the <a href="#terms">Terms of Service</a> and <a href="#privacy">Privacy Policy</a>
+                    </label>
+                </div>
+                <button type="submit" class="btn primary">Create Account</button>
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                <button type="button" class="btn outline social-login">
+                    <i class="fab fa-google"></i> Continue with Google
+                </button>
+                <button type="button" class="btn outline social-login">
+                    <i class="fab fa-facebook"></i> Continue with Facebook
+                </button>
+                <div class="auth-switch">
+                    Already have an account? <a href="#login" id="switch-to-login">Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-icon success">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>Request Received!</h3>
+            <p>Your emergency request has been submitted and is being processed by our AI system. You will receive assistance information shortly.</p>
+            <p><strong>Reference ID:</strong> RESC-<span id="reference-id">2023-05892</span></p>
+            <div class="modal-actions">
+                <button class="btn primary" id="track-request-btn">
+                    <i class="fas fa-map-marked-alt"></i> Track Response
+                </button>
+                <button class="btn outline" id="close-confirmation-btn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="location-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-icon">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <h3>Share Your Location</h3>
+            <p>Allow RescueConnect to access your location to provide accurate assistance?</p>
+            <div class="modal-actions">
+                <button class="btn primary" id="allow-location-btn">
+                    <i class="fas fa-check"></i> Allow
+                </button>
+                <button class="btn outline" id="deny-location-btn">Deny</button>
+            </div>
+            <div class="location-alternative">
+                <p>Or enter your location manually:</p>
+                <input type="text" placeholder="Street, City, or Landmark">
+                <button class="btn small">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+    <script>
+    // Logout functionality - ADD THIS AT BOTTOM
+    document.addEventListener('DOMContentLoaded', function() {
+        // Replace auth buttons with logout
+        const authButtons = document.querySelector('.auth-buttons');
+        if (authButtons) {
+            authButtons.innerHTML = `
+                <button id="logout-btn" class="btn outline">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            `;
+            
+            document.getElementById('logout-btn').addEventListener('click', function() {
+                localStorage.removeItem('isAuthenticated');
+                localStorage.removeItem('userName');
+                window.location.href = 'login.html';
+            });
+        }
+        
+        // Show welcome message if available
+        const userName = localStorage.getItem('userName');
+        if (userName) {
+            const header = document.querySelector('.main-header .container');
+            if (header) {
+                const welcomeMsg = document.createElement('div');
+                welcomeMsg.className = 'welcome-message';
+                welcomeMsg.textContent = `Welcome, ${userName}!`;
+                header.insertBefore(welcomeMsg, authButtons);
+            }
+        }
+    });
+</script>
+</body>
+</html>
